@@ -217,6 +217,9 @@
     <!-- Default state of tap to wake -->
     <bool name="def_double_tap_to_wake">true</bool>
 
+    <!-- Default state of edge tap -->
+    <bool name="def_edge_tap">true</bool>
+
     <!-- Default for Settings.Secure.NFC_PAYMENT_COMPONENT -->
     <string name="def_nfc_payment_component"></string>
 

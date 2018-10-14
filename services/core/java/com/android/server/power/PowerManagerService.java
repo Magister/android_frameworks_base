@@ -182,11 +182,13 @@ public final class PowerManagerService extends SystemService
 
     // Power features defined in hardware/libhardware/include/hardware/power.h.
     private static final int POWER_FEATURE_DOUBLE_TAP_TO_WAKE = 1;
+    private static final int POWER_FEATURE_EDGE_TAP = 2;
 
     private static final int DEFAULT_BUTTON_ON_DURATION = 5 * 1000;
 
     // Default setting for double tap to wake.
     private static final int DEFAULT_DOUBLE_TAP_TO_WAKE = 0;
+    private static final int DEFAULT_EDGE_TAP = 0;
 
     /** Constants for {@link #shutdownOrRebootInternal} */
     @Retention(RetentionPolicy.SOURCE)
@@ -419,6 +421,9 @@ public final class PowerManagerService extends SystemService
     // Whether device supports double tap to wake.
     private boolean mSupportsDoubleTapWakeConfig;
 
+    // Whether device supports edge tap.
+    private boolean mSupportsEdgeTapConfig;
+
     // The screen off timeout setting value in milliseconds.
     private int mScreenOffTimeoutSetting;
 
@@ -543,6 +548,9 @@ public final class PowerManagerService extends SystemService
     // True if double tap to wake is enabled
     private boolean mDoubleTapWakeEnabled;
 
+    // True if edge tap is enabled
+    private boolean mEdgeTapEnabled;
+
     private final ArrayList<PowerManagerInternal.LowPowerModeListener> mLowPowerModeListeners
             = new ArrayList<PowerManagerInternal.LowPowerModeListener>();
 
@@ -598,6 +606,7 @@ public final class PowerManagerService extends SystemService
             nativeSetAutoSuspend(false);
             nativeSetInteractive(true);
             nativeSetFeature(POWER_FEATURE_DOUBLE_TAP_TO_WAKE, 0);
+            nativeSetFeature(POWER_FEATURE_EDGE_TAP, 0);
         }
     }
 
@@ -745,6 +754,9 @@ public final class PowerManagerService extends SystemService
             resolver.registerContentObserver(Settings.Secure.getUriFor(
                     Settings.Secure.DOUBLE_TAP_TO_WAKE),
                     false, mSettingsObserver, UserHandle.USER_ALL);
+            resolver.registerContentObserver(Settings.Secure.getUriFor(
+                    Settings.Secure.EDGE_TAP),
+                    false, mSettingsObserver, UserHandle.USER_ALL);
             IVrManager vrManager =
                     (IVrManager) getBinderService(VrManagerService.VR_MANAGER_BINDER_SERVICE);
             if (vrManager != null) {
@@ -827,6 +839,8 @@ public final class PowerManagerService extends SystemService
                 com.android.internal.R.fraction.config_maximumScreenDimRatio, 1, 1);
         mSupportsDoubleTapWakeConfig = resources.getBoolean(
                 com.android.internal.R.bool.config_supportDoubleTapWake);
+        mSupportsEdgeTapConfig = resources.getBoolean(
+                com.android.internal.R.bool.config_supportEdgeTap);
         mProximityWakeSupported = resources.getBoolean(
                 org.cyanogenmod.platform.internal.R.bool.config_proximityCheckOnWake);
         mProximityWakeEnabledByDefaultConfig = resources.getBoolean(
@@ -877,6 +891,16 @@ public final class PowerManagerService extends SystemService
             if (doubleTapWakeEnabled != mDoubleTapWakeEnabled) {
                 mDoubleTapWakeEnabled = doubleTapWakeEnabled;
                 nativeSetFeature(POWER_FEATURE_DOUBLE_TAP_TO_WAKE, mDoubleTapWakeEnabled ? 1 : 0);
+            }
+        }
+
+        if (mSupportsEdgeTapConfig) {
+            boolean edgeTapEnabled = Settings.Secure.getIntForUser(resolver,
+                    Settings.Secure.EDGE_TAP, DEFAULT_EDGE_TAP,
+                            UserHandle.USER_CURRENT) != 0;
+            if (edgeTapEnabled != mEdgeTapEnabled) {
+                mEdgeTapEnabled = edgeTapEnabled;
+                nativeSetFeature(POWER_FEATURE_EDGE_TAP, mEdgeTapEnabled ? 1 : 0);
             }
         }
 
@@ -3184,6 +3208,7 @@ public final class PowerManagerService extends SystemService
                     + mScreenBrightnessForVrSettingDefault);
             pw.println("  mScreenBrightnessForVrSetting=" + mScreenBrightnessForVrSetting);
             pw.println("  mDoubleTapWakeEnabled=" + mDoubleTapWakeEnabled);
+            pw.println("  mEdgeTapEnabled=" + mEdgeTapEnabled);
             pw.println("  mIsVrModeEnabled=" + mIsVrModeEnabled);
 
             final int sleepTimeout = getSleepTimeoutLocked();

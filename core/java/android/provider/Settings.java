@@ -6644,6 +6644,12 @@ public final class Settings {
         public static final String DOUBLE_TAP_TO_WAKE = "double_tap_to_wake";
 
         /**
+         * Controls whether edge is enabled.
+         * @hide
+         */
+        public static final String EDGE_TAP = "edge_tap";
+
+        /**
          * The current assistant component. It could be a voice interaction service,
          * or an activity that handles ACTION_ASSIST, or empty which means using the default
          * handling.
@@ -6942,6 +6948,7 @@ public final class Settings {
             MOUNT_UMS_NOTIFY_ENABLED,
             SLEEP_TIMEOUT,
             DOUBLE_TAP_TO_WAKE,
+            EDGE_TAP,
             WAKE_GESTURE_ENABLED,
             LONG_PRESS_TIMEOUT,
             CAMERA_GESTURE_DISABLED,
